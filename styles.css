@@ -116,7 +116,7 @@ body {
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 
     transform: translateY(-15px); 
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-image 0.3s, box-shadow 0.3s;
     pointer-events: auto;
 }
 
