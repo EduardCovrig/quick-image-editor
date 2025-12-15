@@ -34,11 +34,11 @@ A basic web-based image editor built purely with **Vanilla JavaScript, HTML, and
 
 * JavaScript (Vanilla) with a focus on DOM manipulation and Canvas API for image processing.
 
-![Demo Quick Image Editor](demo.png)
+![Demo Quick Image Editor](demo-imgs/demo.png)
 
-![Demo Quick Image Editor](fill-modal-demo.png)
+![Demo Quick Image Editor](demo-imgs/fill-modal-demo.png)
 
-![Demo Quick Image Editor](text-modal.png)
+![Demo Quick Image Editor](demo-imgs/text-modal.png)
 
 # 🚀 Getting Started
 ## Prerequisites
