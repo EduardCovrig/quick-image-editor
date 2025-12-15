@@ -38,7 +38,7 @@ A basic web-based image editor built purely with **Vanilla JavaScript, HTML, and
 
 ![Demo Quick Image Editor](demo-imgs/fill-modal-demo.png)
 
-![Demo Quick Image Editor](demo-imgs/text-modal.png)
+![Demo Quick Image Editor](demo-imgs/text-modal-demo.png)
 
 # 🚀 Getting Started
 ## Prerequisites
