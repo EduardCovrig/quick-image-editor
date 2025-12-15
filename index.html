@@ -5,332 +5,8 @@
     <meta charset="UTF-8">
     <title>Image Editor</title>
     <script src="script.js" defer></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
-    <style>
-        * {
-            margin: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #4b4646;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fff;
-            height: 100vh;
-        }
-
-    
-        .app-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* === STRUCTURA PRINCIPALA === */
-        .main-items-container {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-            gap: 20px;
-            padding: 20px;
-            align-items: stretch;
-            justify-content: flex-start;
-            overflow: hidden;
-        }
-
-        /* === BARA DE INSTRUMENTE === */
-        .tools-panel {
-            position: absolute;
-            top: 20px;
-            left: 0px;
-            height: 50px;
-            width: 500px;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            padding: 15px 0px;
-            gap: 15px;
-        }
-
-        .tool-btn {
-            width: 20%;
-            height: 100%;
-            padding: 50px 2px;
-            background: linear-gradient(135deg, #5a4b4b, #7c6a6a);
-            border: none;
-            font-size: 25px;
-            border-radius: 0px;
-            color: #fff;
-            font-weight: 500;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            transform: translateY(-30px);
-        }
-
-        .tool-btn.active {
-            background: linear-gradient(135deg, #a6745c, #c9997a);
-            box-shadow: 0 0 10px rgba(255, 200, 150, 0.5);
-            color: rgb(145, 10, 10);
-            transform: translateY(-10px);
-        }
-
-        .tool-btn:hover {
-            background: linear-gradient(135deg, #7a6060 0%, #aa8585 50%, #7a6060 100%);
-            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(255, 200, 150, 0.2);
-            transform: translateY(-15px);
-        }
-
-        /* === ZONA PRINCIPALA CU IMAGINE === */
-        .main-canvas-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
-            justify-content: flex-start;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            flex-wrap: nowrap;
-        }
-
-        #upload-file {
-            display: none;
-        }
-
-        .file-upload-wrapper>label,
-        .save-btn {
-            padding: 15px 25px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: 0.3s ease;
-            text-align: center;
-            min-width: 150px;
-        }
-
-        .file-upload-wrapper>label {
-            background: linear-gradient(135deg, #836953, #b08968);
-            display: inline-block;
-            color: #fff;
-            box-shadow: 0 8px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .file-upload-wrapper>label:hover {
-            background: linear-gradient(135deg, #a48b7c, #d1b09e);
-            transform: translateY(-4px);
-        }
-
-        .save-btn {
-            background: linear-gradient(135deg, #5c4c4c, #847070);
-            color: #fff;
-            box-shadow: 0 8px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .save-btn:hover {
-            background: linear-gradient(135deg, #7a6060, #aa8585);
-            transform: translateY(-4px);
-        }
-
-        .img-wrapper {
-            flex: 1;
-            position: relative;
-            min-height: 300px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 2px solid rgba(101, 58, 58, 0.1);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .img-wrapper.highlight {
-            /* asta se aplica atunci cand se face drag & drop */
-            border: 4px dashed #FFC896;
-            background: rgba(255, 200, 150, 0.1);
-        }
-
-        .placeholder-text {
-            position: absolute;
-            top: 50%;
-            left: 43%;
-            color: #a6745c;
-            /* Culoarea textului (similara cu butoanele active) */
-            font-size: 1.5em;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .placeholder-text i {
-            font-size: 2.5em;
-        }
-
-        .img {
-            display: block;
-            height: 100%;
-            width: 100%;
-            object-fit: contain;
-            border-radius: 8px;
-            transition: transform 0.3s ease;
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            cursor: crosshair;
-        }
-
-
-        /* ----- Modal overlay pt popup-uri la text(dimensiuni, culoare) si la fill effect (culoarea) ------ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5); /* face interfata principala putin neagra in spate, dar transparenta (0.5) */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal {
-            background: #4b4646;
-            color: #fff;
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
-            min-width: 300px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .modal label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal input {
-            width: 100px;
-            padding: 5px;
-            border-radius: 6px;
-            border: none;
-            font-size: 14px;
-        }
-
-        .modal button {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: 0.3s ease;
-        }
-
-        .modal button:hover {
-            background: #836953;
-        }
-
-        /* === FOOTER === */
-        .footer-container {
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #333;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-            color: #ccc;
-            border-top: 1px solid #555;
-        }
-
-
-        .hidden { /* folosita pt a ascunde niste elemente cand nu e nevoie de ele (mesajul de drag&drop) */
-            display: none;
-        }
-
-        @media (max-width: 800px) {
-            .app-wrapper {
-                padding-top: 50px;
-            }
-
-            .main-items-container {
-                flex-direction: column;
-                padding: 10px;
-                gap: 10px;
-            }
-
-            .buttons {
-                flex-direction: column;
-            }
-
-            .tools-panel {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 50px;
-                z-index: 1000;
-                background: #333;
-                padding: 0px 50px;
-                gap: 5px;
-
-            }
-
-            .tool-btn:hover {
-                transform: none;
-            }
-
-            .tool-btn.active {
-                transform: none;
-            }
-
-            file-upload-wrapper>label:hover {
-                transform: none;
-            }
-
-            .file-upload-wrapper>label,
-            .save-btn {
-                flex: 1;
-                display: flex;
-                font-size: 20px;
-                padding: 10px 15px;
-                justify-content: center;
-            }
-
-            .file-upload-wrapper>label {
-                margin-top: 24px;
-            }
-
-            .save-btn:hover {
-                transform: none;
-            }
-        }
-
-        .img-wrapper {
-            min-height: 250px;
-            height: 70vh;/
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -339,22 +15,19 @@
             <!-- Tools -->
             <div class="tools-panel">
                 <button class="tool-btn active" id="select-tool">
-                    <i class="fa-regular fa-hand-pointer"></i>
+                    <i class="bi bi-hand-index"></i>
                 </button>
                 <button class="tool-btn" id="crop-tool">
-                    <i class="fa-solid fa-crop-simple"></i>
-                </button>
-                <button class="tool-btn" id="scale-tool">
-                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                    <i class="bi bi-crop"></i>
                 </button>
                 <button class="tool-btn" id="text-tool">
-                    <i class="fa-solid fa-t"></i>
+                    <i class="bi bi-type"></i>
                 </button>
                 <button class="tool-btn" id="effect-tool">
-                    <i class="fa-solid fa-fill-drip"></i>
+                    <i class="bi bi-paint-bucket"></i>
                 </button>
                 <button class="tool-btn" id="delete-tool">
-                    <i class="fa-solid fa-trash"></i>
+                    <i class="bi bi-trash"></i>
                 </button>
             </div>
 
@@ -370,8 +43,8 @@
                 <div class="img-wrapper">
                     <img class="img">
                     <span class="placeholder-text">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
-                        <p>Drag & drop your files here</p>
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <p>Drag & drop your image here</p>
                     </span>
                     <canvas class="selection-canvas"></canvas>
                 </div>

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // === ELEMENTE DOM ===
+    // ======================= ELEMENTE DOM ==============
     const uploadInput = document.getElementById('upload-file');
     const imageElement = document.querySelector('.img');
     const imgWrapper = document.querySelector('.img-wrapper');
@@ -11,9 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const placeholderText = document.querySelector('.placeholder-text');
 
     // === VARIABILE GLOBALE ===
-    let originalImage = null; // Tine imaginea originala
+    let originalImage = null; // Tine imagnea originala
     let currentTool = 'select';
-    let isDrawing = false; // true daca mouseul e apasat pe canvas
+    let isDrawing = false; // true daca mouseul e apsaat pe canvas
     let startX = 0; // Pozitia X de start a selectiei
     let startY = 0; // Pozitia Y de start a selectiei
     let currentSelection = { x: 0, y: 0, w: 0, h: 0 }; // Dreptunghiul de selectie curent
@@ -26,10 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let scaleX = 1;
     let scaleY = 1;
 
-    let scaleModal = null; //pt pop-up
     let textModal = null; //pt pop-up text
     
-    //pt propietatile textului
+    //pt propietatiile textului
     let currentTextSize = 30; 
     let currentTextColor = '#FFFFFF'; 
 
@@ -47,14 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const imgOrigW = originalImage.width; //dimensiunile originale ale imaginii (nescalate)
         const imgOrigH = originalImage.height;
         let dW, dH, dX, dY; // dW=DisplayWidth, dH=DisplayHeight, dX=DisplayX, dY=DisplayY
-        const ratioImage = imgOrigW / imgOrigH; 
+        const raportImagine = imgOrigW / imgOrigH; 
 
-        if (ratioImage > (wrapperW / wrapperH)) {
+        if (raportImagine > (wrapperW / wrapperH)) { // paranteza reprezinta raportul pt wrapper
             dW = wrapperW;
-            dH = wrapperW / ratioImage;
+            dH = wrapperW / raportImagine;
         } else {
             dH = wrapperH;
-            dW = wrapperH * ratioImage;
+            dW = wrapperH * raportImagine;
         }
         dX = (wrapperW - dW) / 2;
         dY = (wrapperH - dH) / 2;
@@ -64,8 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
         selectionCanvas.height = dH;
     
         //canvasul incepe exact de unde incepe si imaginea
-        selectionCanvas.style.left = `${dX}px`;
-        selectionCanvas.style.top = `${dY}px`;
+        selectionCanvas.style.left = dX + "px";
+        selectionCanvas.style.top = dY + "px";
 
         //noua rata de scalare(imagine originala/scalata sa incapa pe ecran)
         scaleX = imgOrigW / dW;
@@ -97,20 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     }
 }; 
-function preventDefaults(e) { //anulam comportamentul default de la buton/drag & drop
-    e.preventDefault();
-    e.stopPropagation();
-}
-
 //1. pt upload prin buton
 uploadInput.addEventListener('change', (e) => {
-    preventDefaults(e);
-    loadImageFile(e.target.files[0]);
+    if(e.target.files[0])
+        loadImageFile(e.target.files[0]);
+
 });
 
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    imgWrapper.addEventListener(eventName, preventDefaults); 
-});
+//anulam pentru astea 4 comportamentul default 
+imgWrapper.addEventListener('dragenter', e => e.preventDefault());
+imgWrapper.addEventListener('dragover', e => e.preventDefault());
+imgWrapper.addEventListener('dragleave', e => e.preventDefault());
+imgWrapper.addEventListener('drop', e => e.preventDefault());
 
 // Feedback vizual la drag
 ['dragenter', 'dragover'].forEach(eventName => { //la evenimentele astea adaugam clasa asta, care in css va face un contur cu galben
@@ -123,9 +120,9 @@ uploadInput.addEventListener('change', (e) => {
 
 //2. pt upload prin drag & drop
 imgWrapper.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        loadImageFile(files[0]);
+    const files = e.dataTransfer.files; //luam fisierele puse
+    if (files.length > 0) { //daca exista
+        loadImageFile(files[0]); //le punem
     }
 });
 
@@ -134,8 +131,8 @@ imgWrapper.addEventListener('drop', (e) => {
     toolButtons.forEach(button => {
         button.addEventListener('click', () => {
             const toolId = button.id.replace('-tool', ''); 
-            //pt o gestionare mai simpla in cod, facem fiecare id sa fie fara tool in nume
-            setActiveTool(toolId);
+            //pt o gestionare mai simpla in cod, facem fiecare id sa fie fara tool in nume, inlocuind tool cu spatiu gol
+            setActiveTool(toolId); 
         });
     });
 
@@ -147,22 +144,22 @@ imgWrapper.addEventListener('drop', (e) => {
                 applyCrop();
             } else if (toolId === 'delete') {
                 deleteSection(currentSelection);
-            } else if (toolId === 'effect') {
-                 // nu se apeleaza nimic, deoarece utilizatorul trebuie sa aleaga culoarea (logica se afla in moseup)
             } 
+            //pt restul logica nu se afla aici, ci in mouseup de mai jos, ca au nevoie de detalii luate din pop-up
         }
-        clearCanvas();
-        currentSelection = { x: 0, y: 0, w: 0, h: 0 };
+        if (toolId !== 'effect' && toolId !== 'text') {  //daca nu suntem pe cazul
+            //in care trebuie sa preluam date dintr-un modal pop-up
+            clearCanvas();
+            currentSelection = { x: 0, y: 0, w: 0, h: 0 };
+        }
         toolButtons.forEach(btn => btn.classList.remove('active')); //scoate stilul de activ de la celallte
         document.getElementById(`${toolId}-tool`).classList.add('active'); //face activ butonul apasat
         currentTool = toolId;
 
         selectionCanvas.style.pointerEvents = (toolId === 'crop' || toolId === 'select' || toolId === 'text' || toolId === 'delete' || toolId === 'effect') ? 'auto' : 'none';
+        //alege tipul de cursor
 
-        if (toolId === 'scale') {
-            showScaleModal(); //afiseaz popup pt scale 
-            setActiveTool('select');
-        }
+ 
         if (toolId === 'text') {
             //afiseaza popup pt setari text
             showTextModal();
@@ -202,7 +199,8 @@ imgWrapper.addEventListener('drop', (e) => {
     const getCanvasCoords = (e) => {
         const rect = selectionCanvas.getBoundingClientRect();
         return {
-            x: e.clientX - rect.left,
+            x: e.clientX - rect.left, //clientX e pozitia absoluta a mouse-ului in fereastra
+            //facand scaderea, obtinem exact coordonatele mouse-ului in interiorul canvas-ului
             y: e.clientY - rect.top
         };
     };
@@ -402,7 +400,7 @@ imgWrapper.addEventListener('drop', (e) => {
         if (!originalImage) return;
 
         effectModal = document.createElement('div');
-        effectModal.className = 'modal-overlay'; 
+        effectModal.className = 'modal-overlay';  //ia stilul css.
         
         effectModal.innerHTML = `
             <div class="modal">
@@ -428,7 +426,11 @@ imgWrapper.addEventListener('drop', (e) => {
         const closeModal = () => {
             if (effectModal) {
                 document.body.removeChild(effectModal);//stergere din dom
-                effectModal = null; //culoare e null
+                effectModal = null; //ca sa merrga data viitoare
+            }
+            if (textModal) { //acelasi lucru
+                document.body.removeChild(textModal); 
+                textModal = null;
             }
         };
 
@@ -438,6 +440,8 @@ imgWrapper.addEventListener('drop', (e) => {
             //actualizare culoare in variabila globala
             currentFillColor = colorInput.value;
             closeModal(); //inchidere pop-up
+            if (currentSelection.w > 0) applyEffect(currentSelection);
+            //aplicare efect daca exista o selectie valida deja.
         });
     };
 
@@ -494,13 +498,15 @@ imgWrapper.addEventListener('drop', (e) => {
 
                 // Calculeaza pozitiile si dimensiunea fontului pe imaginea orignala inmultiind cu scale.
                 const originalTextX = (selection.x + selection.w / 2) * scaleX;
-                const originalTextY = (selection.y + selection.h * 0.9) * scaleY;
+                const originalTextY = (selection.y + selection.h /2) * scaleY;
                 const originalFontSize = currentTextSize * scaleY; // Folosim currentTextSize din modal
 
                 //desenare text pe canvas
                 tempCtx.fillStyle = currentTextColor; // Folosim currentTextColor din modal
                 tempCtx.font = `bold ${originalFontSize}px sans-serif`;
                 tempCtx.textAlign = 'center';
+                tempCtx.textAlign = 'center';      // Centreaza pe orizontala (X)
+                tempCtx.textBaseline = 'middle'; //centreala pe verticala 
 
                 tempCtx.fillText(
                     textToWrite, 
@@ -552,7 +558,7 @@ imgWrapper.addEventListener('drop', (e) => {
         const originalCropW = currentSelection.w * scaleX;
         const originalCropH = currentSelection.h * scaleY;
 
-        // 2. Creaza canvas temporar pentru decupare
+        // 2. Creaza canvas nou pentru decupare
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = originalCropW;
         tempCanvas.height = originalCropH;
@@ -561,7 +567,7 @@ imgWrapper.addEventListener('drop', (e) => {
         // Deseneaza DOAR portiunea selectata din imaginea originala
         tempCtx.drawImage(
             originalImage, //imaginea originala
-            originalCropX, originalCropY, originalCropW, originalCropH, // zona dorita
+            originalCropX, originalCropY, originalCropW, originalCropH, // zona dorita din crop
             0, 0, originalCropW, originalCropH // locul in care putem zona dorita, in noul canvas (de la coltul din stanga sus, cu width si height dorite)
         );
 
@@ -626,8 +632,14 @@ imgWrapper.addEventListener('drop', (e) => {
         const closeModal = () => {
             if (textModal) {
                 document.body.removeChild(textModal); //scoate din dom
-                textModal = null;
+                textModal = null; //ca sa mearga data viitoare iar
+                if (currentSelection.w > 0) writeText(currentSelection);
+                //daca exista deja o selectie facuta, sa scrie textul acum.
             }
+            if (effectModal) { //exact acelasi lucru
+                document.body.removeChild(effectModal);
+                effectModal = null;
+            } 
         };
     
         cancelButton.addEventListener('click', closeModal);
@@ -646,123 +658,6 @@ imgWrapper.addEventListener('drop', (e) => {
             }
         });
     };
-
-
-
-// ----------------- 7. SCALARE ------------------
-
-
-    //POP UP PT ALEGERE DIMENSIUNI NOI 
-    const showScaleModal = () => {
-        if (scaleModal) return; // daca pop-ul e deja deschis
-        if (!originalImage) return;
-
-        // Creeaza interfata de pop-up pt scalare
-        scaleModal = document.createElement('div');
-        scaleModal.className = 'modal-overlay'; // reutilizare clasa din css
-        scaleModal.innerHTML = `
-            <div class="modal">
-                <h3>Scale Image</h3>
-                <label> New Width (px): <input type="number" id="scale-width" value="${originalImage.width}" min="1"> </label>
-                <label> New Height (px): <input type="number" id="scale-height" value="${originalImage.height}" min="1"> </label>
-                <div style="display: flex; justify-content: space-between; gap: 10px;">
-                    <button id="cancel-scale">Cancel</button>
-                    <button id="apply-scale">Apply</button>
-                </div>
-                <p style="font-size: 0.9em; margin-top: 15px;">The image shown on the screen is always <strong>fitted to your display</strong>.<br>
-                The resolution you enter here will only apply<br>
-                to the <strong>final downloaded file</strong>.</p>
-            </div>
-        `;
-        document.body.appendChild(scaleModal); //adaugam la html elementul
-
-        const widthInput = document.getElementById('scale-width');
-        const heightInput = document.getElementById('scale-height');
-        const applyButton = document.getElementById('apply-scale');
-        const cancelButton = document.getElementById('cancel-scale');
-        //luam referintele catre ce ne intereseaza
-        
-
-
-
-        // CALCUL AUTOMAT PROPITETATE
-        //1. Cand se modifica LATIMEA, calcul automat iNALTime
-        const aspectRatio = originalImage.width / originalImage.height;
-        widthInput.addEventListener('input', () => {
-            const newW = parseInt(widthInput.value);
-            if (!isNaN(newW) && newW > 0) {
-                // new Height = new Width / aspectRatio
-                heightInput.value = Math.round(newW / aspectRatio); // ca sa fie numar intreg
-            }
-        });
-
-        // Cand se modifica INALTIMEA, calcul AUTOMAT LATIME
-        heightInput.addEventListener('input', () => {
-            const newH = parseInt(heightInput.value);
-            if (!isNaN(newH) && newH > 0) {
-                // new Width = new Height * aspectRatio
-                widthInput.value = Math.round(newH * aspectRatio); // ca sa fie numar intreg
-            }
-        });
-
-        const closeModal = () => {
-            if (scaleModal) {
-                document.body.removeChild(scaleModal);
-                scaleModal = null;
-            }
-            //scoatem popup-ul din html
-        };
-
-        cancelButton.addEventListener('click', closeModal);
-        applyButton.addEventListener('click', () => {
-            const newW = parseInt(widthInput.value)
-            const newH = parseInt(heightInput.value)
-
-            if (newW > 0 && newH > 0) {
-                applyScale(newW, newH); //aplicam pe imagine noile dimensiuni
-                closeModal(); //scoatem popup-ul din html
-            } else {
-                alert('Both width and height must be positive numbers.');
-            }
-        });
-    };
-
-
-
-    //FUNCTIE DE APLICARE SCALE
-    const applyScale = (newWidth, newHeight) => {
-        if (!originalImage) return;
-
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = newWidth;
-        tempCanvas.height = newHeight;
-        const tempCtx = tempCanvas.getContext('2d');
-
-        // Pune imaginea pe noul canvas
-        tempCtx.drawImage(
-            originalImage,
-            0, 0, originalImage.width, originalImage.height, // imaginea veche
-            0, 0, newWidth, newHeight // zona in care se pune imaginea veche
-        );
-
-        // actualizam imaginea originala cu cea noua.
-        originalImage.src = tempCanvas.toDataURL();
-        originalImage.width = newWidth;
-        originalImage.height = newHeight;
-        imageElement.src = originalImage.src;
-
-        updateCanvasToMatchImage(); // realiniaza tot
-    };
-
-    //FINAL SCALARE
-
-
-
-
-
-
-
-
 
     // -------------------- 8. SALVARE IMAGINE ------------------------------
     saveButton.addEventListener('click', () => {
