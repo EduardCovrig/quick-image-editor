@@ -2,7 +2,7 @@
 
 A basic web-based image editor built purely with **Vanilla JavaScript, HTML, and CSS**. This tool allows users to upload an image and perform common editing tasks such as selection, cropping, deletion, scaling, and adding colored fills and text overlays.
 
-### 🚀 [See the project live here](https://eduardcovrig.github.io/ImageEditor-Website/)
+### 🚀 [See the project live here](https://eduardcovrig.github.io/quick-image-editor/)
 
 
 
